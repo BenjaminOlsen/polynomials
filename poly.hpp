@@ -12,9 +12,23 @@ template <typename T> struct polynomial;
 template <typename T>
 using polynomial_pair = std::pair<polynomial<T>, polynomial<T>>;
 
+// -------------------------------------------------------------------------------------------------
 template <typename T>
 struct polynomial {
-
+ public:
+ //private:
+    // removes all 0 in the high degrees
+    void reduce() {
+        auto last_nonzero_it = std::find_if(coeffs.rbegin(), coeffs.rend(),
+               [](const T &t){ return t != 0; });
+        if (last_nonzero_it != coeffs.rend()) {
+            coeffs.resize(std::distance(coeffs.begin(), last_nonzero_it.base()));
+        } else {
+            coeffs = std::vector<T>(1, 0);
+        }
+    }
+ 
+ public:
     std::vector<T> coeffs;
     
     polynomial() = default;
@@ -30,14 +44,14 @@ struct polynomial {
 
     polynomial& operator*=(const polynomial &other) {
         size_t result_size = coeffs.size() + other.coeffs.size() - 1;
-        std::vector<T> result(result_size, 0);
+        std::vector<T> result_vec(result_size, 0);
         
         for (size_t i = 0; i < coeffs.size(); ++i) {
             for (size_t j = 0; j < other.coeffs.size(); j++) {
-                result[i+j] += coeffs[i] * other.coeffs[j];
+                result_vec[i+j] += coeffs[i] * other.coeffs[j];
             }    
         }
-        coeffs = result;
+        coeffs = result_vec;
         return *this;
     }
 
@@ -114,23 +128,45 @@ struct polynomial {
         polynomial result(a);
         return result *= b;
     }
-
+    
     friend polynomial operator*(const T &scalar, const polynomial &poly) {
         polynomial result(poly);
         for (T& val: result.coeffs) {
             val *= scalar;
         }
+        result.reduce();
         return result;
     }
 
+    friend polynomial operator/(const polynomial &poly, const T &scalar) {
+        polynomial result(poly);
+        for (T& val: result.coeffs) {
+            val /= scalar;
+        }
+        result.reduce();
+        return result;
+    }
+
+    friend polynomial operator/(const polynomial &a, const polynomial &b) {
+        polynomial c = divide(a,b).first;
+        c.reduce();
+        return c;
+    }
+    
     friend polynomial operator+(const polynomial &a, const polynomial &b) {
         size_t maxSize = std::max(a.coeffs.size(), b.coeffs.size());
-        std::vector<T> result(maxSize);
-        std::copy_n(a.coeffs.begin(), a.coeffs.size(), result.begin());
-        std::transform(result.cbegin(), result.cbegin() + b.coeffs.size(),
-                b.coeffs.cbegin(), result.begin(),
+        std::vector<T> result_vec(maxSize);
+        std::copy_n(a.coeffs.begin(), a.coeffs.size(), result_vec.begin());
+        std::transform(result_vec.cbegin(), result_vec.cbegin() + b.coeffs.size(),
+                b.coeffs.cbegin(), result_vec.begin(),
                 [](const T &a, const T &b){ return a + b; });
+        polynomial result(result_vec);
+        result.reduce();
         return result;
+    }
+
+    friend polynomial operator-(const polynomial &a, const polynomial &b) {
+        return a + (-1*b);
     }
 
     const T& operator[](size_t idx) const {
@@ -142,6 +178,7 @@ struct polynomial {
         std::transform(coeffs.cbegin(), coeffs.cbegin() + minSize, 
                 other.coeffs.cbegin(), coeffs.begin(),
                 [](T& a, T& b){ return a - b; });
+        reduce();
         return *this;
     }
 
@@ -152,6 +189,9 @@ struct polynomial {
 
     friend
     polynomial_pair<T> divide(polynomial<T>u, polynomial<T> v) {
+        if (u == 0) {
+            return polynomial_pair<T>(0,0);
+        }
         size_t m = u.degree();
         size_t n = v.degree();
         
@@ -176,6 +216,8 @@ struct polynomial {
         std::cout << "r: ";
         r.print();
         //return r;
+        q.reduce();
+        r.reduce();
         return polynomial_pair<T>(q,r);
     }
 
