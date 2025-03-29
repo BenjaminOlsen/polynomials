@@ -18,6 +18,13 @@ TYPED_TEST(poly_test, self_identity)
 }
 
 // -------------------------------------------------------------------------------------------------
+TYPED_TEST(poly_test, self_identity_type)
+{
+    polynomial<int, 1, 2, 3> p1;
+    EXPECT_EQ(p1, p1);
+}
+
+// -------------------------------------------------------------------------------------------------
 TYPED_TEST(poly_test, identity)
 {
     polynomial<TypeParam> p1({1,2,3});

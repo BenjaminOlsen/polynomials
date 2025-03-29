@@ -7,14 +7,14 @@
 using real = double;
 
 // fwd declaration for polynomial_pair
-template <typename T> struct polynomial;
+template <typename T, T... coeff_pack> struct polynomial;
 
 template <typename T>
 using polynomial_pair = std::pair<polynomial<T>, polynomial<T>>;
 
 // -------------------------------------------------------------------------------------------------
 template <typename T>
-struct polynomial {
+struct polynomial<T> {
  public:
  //private:
     // removes all 0 in the high degrees
@@ -232,6 +232,24 @@ struct polynomial {
         return stream;
     }
 
+};
+
+// compile-time specialization:
+template <typename T, T ...coeff_pack>
+struct polynomial {
+    static constexpr std::array<T, sizeof...(coeff_pack)> coeffs_array = {coeff_pack...};
+
+    constexpr size_t degree() const { return sizeof...(coeff_pack) - 1; }
+    
+    template<T... other_coeff_pack>
+    friend constexpr bool operator!=(const polynomial&, const polynomial<T, other_coeff_pack...>&) {
+        return !std::is_same_v<polynomial, polynomial<T, other_coeff_pack...>>;
+    }
+    
+    template<T... other_coeff_pack>
+    friend constexpr bool operator==(const polynomial &a, const polynomial<T, other_coeff_pack...> &b) {
+        return !(a !=b);
+    }
 };
 
 template <typename T>
