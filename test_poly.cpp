@@ -25,6 +25,14 @@ TYPED_TEST(poly_test, self_identity_type)
 }
 
 // -------------------------------------------------------------------------------------------------
+TYPED_TEST(poly_test, self_identity_type_trailing_zero)
+{
+    polynomial<int, 1, 2, 3> p1;
+    polynomial<int, 1, 2, 3, 0> p2;
+    EXPECT_EQ(p1, p2);
+}
+
+// -------------------------------------------------------------------------------------------------
 TYPED_TEST(poly_test, identity)
 {
     polynomial<TypeParam> p1({1,2,3});

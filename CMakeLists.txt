@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14)
 project(libpolyTest)
 
 # GoogleTest requires at least C++14
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS 1)
 
@@ -26,7 +26,7 @@ include(FetchContent)
 set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
   googletest
-  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+  URL https://github.com/google/googletest/releases/download/v1.16.0/googletest-1.16.0.tar.gz
 )
 # For Windows: Prevent overriding the parent project's compiler/linker settings
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)

@@ -1,14 +1,23 @@
+#include "meta.hpp"
+
 #include <vector>
+#include <array>
+#include <type_traits>
 #include <cstdio>
 #include <iostream>
 #include <algorithm>
 #include <iterator>
 
+//namespace poly {
+//
+// -------------------------------------------------------------------------------------------------
+template <typename T, T... RawCoeffs>
+struct polynomial : polynomial<typename poly::trim_trailing_zeros<T, RawCoeffs...>::type> {};
+//template <typename T, T... coeff_pack> struct polynomial;
+
 using real = double;
 
 // fwd declaration for polynomial_pair
-template <typename T, T... coeff_pack> struct polynomial;
-
 template <typename T>
 using polynomial_pair = std::pair<polynomial<T>, polynomial<T>>;
 
@@ -236,7 +245,7 @@ struct polynomial<T> {
 
 // compile-time specialization:
 template <typename T, T ...coeff_pack>
-struct polynomial {
+struct polynomial<std::integer_sequence<T, coeff_pack...>> {
     static constexpr std::array<T, sizeof...(coeff_pack)> coeffs_array = {coeff_pack...};
 
     constexpr size_t degree() const { return sizeof...(coeff_pack) - 1; }
@@ -248,7 +257,7 @@ struct polynomial {
     
     template<T... other_coeff_pack>
     friend constexpr bool operator==(const polynomial &a, const polynomial<T, other_coeff_pack...> &b) {
-        return !(a !=b);
+        return !std::is_same_v<polynomial, polynomial<T, other_coeff_pack...>>;
     }
 };
 
@@ -270,3 +279,4 @@ polynomial<T> gcd(polynomial<T> u, polynomial<T> v) {
     return m;
 }
 
+//}  // namespace poly
